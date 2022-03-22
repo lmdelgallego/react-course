@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import MeetupList from '../components/meetups/MeetupList';
 
 const DUMMY_DATA = [
@@ -22,10 +23,33 @@ const DUMMY_DATA = [
 ];
 
 const AllMeetupsPage = () => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadedMeetups, setLoadedMeetups] = useState([]);
+
+  fetch('https://goalcoach-a4187.firebaseio.com/meetups.json', {
+    method: 'GET',
+  })
+    .then((res) => {
+      return res.json();
+    })
+    .then((data) => {
+      setIsLoading(false);
+      setLoadedMeetups(data);
+      console.log(data);
+    });
+
+  if (isLoading) {
+    return (
+      <section>
+        <h1>Loading...</h1>
+      </section>
+    );
+  }
+
   return (
     <section>
       <h1>AllMeetups</h1>
-      <MeetupList meetups={DUMMY_DATA} />
+      <MeetupList meetups={loadedMeetups} />
     </section>
   );
 };
