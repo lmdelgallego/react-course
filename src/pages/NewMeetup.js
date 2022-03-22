@@ -1,6 +1,9 @@
+import { useHistory } from 'react-router-dom';
 import NewMeetupForm from '../components/meetups/NewMeetupForm';
 
 const NewMeetupPage = () => {
+  const history = useHistory();
+
   const addMeetupHandler = (meetup) => {
     fetch('https://goalcoach-a4187.firebaseio.com/meetups.json', {
       method: 'POST',
@@ -8,6 +11,8 @@ const NewMeetupPage = () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(meetup),
+    }).then((res) => {
+      history.replace('/');
     });
   };
 
