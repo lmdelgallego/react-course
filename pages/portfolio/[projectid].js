@@ -8,7 +8,7 @@ const PortfolioProjectPage = () => {
 
   return (
     <div>
-      <h1>PortfolioProjectPage</h1>
+      <h1>The Portfolio Project Page</h1>
     </div>
   );
 };
