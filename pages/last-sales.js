@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 
-const LastSalesPage = () => {
+const LastSalesPage = (props) => {
 
-  const [sales, setSales] = useState();
+  const [sales, setSales] = useState(props.sales);
   // const [isLoading, setIsLoading] = useState(false);
 
   const { data, error } = useSWR('https://goalcoach-a4187.firebaseio.com/sales.json', (url) => fetch(url).then(res => res.json()));
@@ -56,6 +56,27 @@ const LastSalesPage = () => {
       ))}
     </ul>
   )
+}
+
+export const getStaticProps = async () => {
+  const response = await fetch('https://goalcoach-a4187.firebaseio.com/sales.json');
+  const data = await response.json();
+  const transformedData = [];
+
+  for (let key in data) {
+    transformedData.push({
+      id: key,
+      ...data[key],
+    });
+  }
+  console.log('transformedData', transformedData);
+  return {
+    props: {
+      sales: transformedData,
+    },
+    // revalidate: 10,
+  }
+
 }
 
 export default LastSalesPage
