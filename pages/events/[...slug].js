@@ -1,26 +1,51 @@
+import { Fragment, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import useSWR from 'swr';
 import { getFilteredEvents } from '../../helpers/api-util';
 import EventList from '../../components/events/event-list';
 import ResultTitle from '../../components/events/results-title';
-import { Fragment } from 'react';
 import Button from '../../components/ui/button';
 import ErrorAlert from '../../components/ui/error-alert';
 
 const FilteredEventsPage = (props) => {
+  const [loadedEvents, setLoadedEvents] = useState();
   const router = useRouter();
-  // const filterData = router.query.slug;
-  // if (!filterData) {
-  //   return <p className='center'>Loading...</p>;
-  // }
+  const filterData = router.query.slug;
 
-  // const filteredYear = filterData[0];
-  // const filteredMonth = filterData[1];
+  const { data, error } = useSWR('https://goalcoach-a4187.firebaseio.com/events.json', (url) => fetch(url).then(res => res.json()))
 
-  // const numYear = +filteredYear;
-  // const numMonth = +filteredMonth;
+  useEffect(() => {
+    if (data) {
+      const events = Object.keys(data).map((key) => {
+        return {
+          ...data[key],
+          id: key,
+        };
+      });
 
+      setLoadedEvents(events);
+    }
+  }, [data]);
 
-  if (props.hasError) {
+  if (!loadedEvents) {
+    return <p className='center'>Loading...</p>;
+  }
+
+  const filteredYear = filterData[0];
+  const filteredMonth = filterData[1];
+
+  const numYear = +filteredYear;
+  const numMonth = +filteredMonth;
+
+  if (
+    isNaN(numYear) ||
+    isNaN(numMonth) ||
+    numYear < 2020 ||
+    numYear > 2030 ||
+    numMonth < 1 ||
+    numMonth > 12 ||
+    error
+  ) {
     return (
       <Fragment>
         <ErrorAlert >
@@ -34,15 +59,18 @@ const FilteredEventsPage = (props) => {
 
   }
 
-  const date = new Date(props.date.numYear, props.date.numMonth - 1);
+  const filteredEvents = loadedEvents.filter((event) => {
+    const eventDate = new Date(event.date);
+    return eventDate.getFullYear() === numYear && eventDate.getMonth() === numMonth - 1;
+  });
 
-  const filteredEvents = props.events;
+  const date = new Date(numYear, numMonth - 1);
 
   if (filteredEvents.length === 0 || !filteredEvents) {
     return (
       <Fragment>
         <ErrorAlert>
-          <p className='center'>No events found for {props.date.numMonth - 1}/{props.date.numYear}</p>
+          <p className='center'>No events found for {filteredMonth}/{filteredYear}</p>
         </ErrorAlert>
         <div className='center'>
           <Button link='/events'>Show All Events</Button>
@@ -61,7 +89,7 @@ const FilteredEventsPage = (props) => {
   );
 };
 
-export const getServerSideProps = async (ctx) => {
+/* export const getServerSideProps = async (ctx) => {
   const { params } = ctx;
 
   const filterData = params.slug;
@@ -96,6 +124,6 @@ export const getServerSideProps = async (ctx) => {
       }
     }
   };
-}
+} */
 
 export default FilteredEventsPage;
