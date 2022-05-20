@@ -12,7 +12,7 @@ const FilteredEventsPage = (props) => {
   const router = useRouter();
   const filterData = router.query.slug;
 
-  const { data, error } = useSWR('https://goalcoach-a4187.firebaseio.com/events.json', (url) => fetch(url).then(res => res.json()))
+  const { data, error } = useSWR('https://goalcoach-a4187.firebaseio.com/events.json', (url) => fetch(url).then(res => res.json()));
 
   useEffect(() => {
     if (data) {
@@ -27,8 +27,18 @@ const FilteredEventsPage = (props) => {
     }
   }, [data]);
 
+  let pageHeadData = (
+    <Head>
+      <title>Filtered Events</title>
+      <meta name='description' content={"A list of filtered events"} />
+    </Head>
+  );
+
   if (!loadedEvents) {
-    return <p className='center'>Loading...</p>;
+    return <Fragment>
+      {pageHeadData}
+      <p className='center'>Loading...</p>
+    </Fragment>;
   }
 
   const filteredYear = filterData[0];
@@ -36,6 +46,14 @@ const FilteredEventsPage = (props) => {
 
   const numYear = +filteredYear;
   const numMonth = +filteredMonth;
+
+  pageHeadData = (
+    <Head>
+      <title>Filtered Events</title>
+      <meta name='description' content={`All events for ${numMonth}/${numYear}`} />
+    </Head>
+  )
+
 
   if (
     isNaN(numYear) ||
@@ -48,6 +66,7 @@ const FilteredEventsPage = (props) => {
   ) {
     return (
       <Fragment>
+        {pageHeadData}
         <ErrorAlert >
           <p className='center'>Invalid filter. Please adjust your values!</p>;
         </ErrorAlert>
@@ -69,6 +88,7 @@ const FilteredEventsPage = (props) => {
   if (filteredEvents.length === 0 || !filteredEvents) {
     return (
       <Fragment>
+        {pageHeadData}
         <ErrorAlert>
           <p className='center'>No events found for {filteredMonth}/{filteredYear}</p>
         </ErrorAlert>
@@ -83,10 +103,7 @@ const FilteredEventsPage = (props) => {
 
   return (
     <Fragment>
-      <Head>
-        <title>Filtered Events</title>
-        <meta name='description' content={`All events for ${numMonth}/${numYear}`} />
-      </Head>
+      {pageHeadData}
       <ResultTitle date={date} />
       <EventList items={filteredEvents} />
     </Fragment>
